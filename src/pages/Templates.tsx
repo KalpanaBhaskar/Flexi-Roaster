@@ -13,41 +13,11 @@ import {
     Zap,
     Database,
     Brain,
-    FileText,
-    BarChart3,
-    Mail,
 } from 'lucide-react';
+import { usePipelines } from '@/hooks/usePipelines';
+import { categoryLabels, templatesCatalog, type PipelineTemplate, type TemplateCategory } from '@/lib/templates';
 
-interface Template {
-    id: string;
-    name: string;
-    description: string;
-    icon: React.ElementType;
-    category: 'data' | 'ai' | 'integration' | 'reporting' | 'automation';
-    stages: number;
-    isOfficial: boolean;
-}
-
-// Static template catalog - not user data, just available templates
-const templatesCatalog: Template[] = [
-    { id: 'tpl-001', name: 'ETL Data Pipeline', description: 'Extract, Transform, Load data from multiple sources to a data warehouse', icon: Database, category: 'data', stages: 4, isOfficial: true },
-    { id: 'tpl-002', name: 'ML Model Training', description: 'Complete pipeline for training and deploying ML models', icon: Brain, category: 'ai', stages: 5, isOfficial: true },
-    { id: 'tpl-003', name: 'Daily Report Generator', description: 'Generate and email daily business reports automatically', icon: FileText, category: 'reporting', stages: 3, isOfficial: true },
-    { id: 'tpl-004', name: 'API Data Sync', description: 'Sync data between APIs and databases periodically', icon: Zap, category: 'integration', stages: 4, isOfficial: true },
-    { id: 'tpl-005', name: 'Log Analyzer', description: 'Process and analyze application logs for insights', icon: BarChart3, category: 'data', stages: 3, isOfficial: true },
-    { id: 'tpl-006', name: 'Email Notifications', description: 'Send email notifications based on triggers and events', icon: Mail, category: 'automation', stages: 2, isOfficial: true },
-];
-
-const categoryLabels = {
-    data: 'Data Processing',
-    ai: 'AI & ML',
-    integration: 'Integrations',
-    reporting: 'Reporting',
-    automation: 'Automation',
-};
-
-function TemplateCard({ template }: { template: Template }) {
-    const navigate = useNavigate();
+function TemplateCard({ template, onUseTemplate }: { template: PipelineTemplate; onUseTemplate: (template: PipelineTemplate) => void }) {
     const Icon = template.icon;
 
     return (
@@ -74,14 +44,14 @@ function TemplateCard({ template }: { template: Template }) {
             <div className="flex items-center gap-4 text-[10px] text-white/40 mb-4">
                 <div className="flex items-center gap-1">
                     <GitBranch className="w-3 h-3" />
-                    {template.stages} stages
+                    {template.stageNames.length} stages
                 </div>
             </div>
 
             <div className="flex items-center justify-between pt-3 border-t border-white/5">
                 <span className="text-[10px] text-white/30">FlexiRoaster</span>
                 <button
-                    onClick={() => navigate('/pipelines')}
+                    onClick={() => onUseTemplate(template)}
                     className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/15 rounded text-xs font-medium text-white transition-colors"
                 >
                     <Play className="w-3 h-3" />
@@ -94,7 +64,9 @@ function TemplateCard({ template }: { template: Template }) {
 
 export function TemplatesPage() {
     const navigate = useNavigate();
-    const [filter, setFilter] = useState<'all' | 'data' | 'ai' | 'integration' | 'reporting' | 'automation'>('all');
+    const { createPipeline } = usePipelines();
+    const [isCreating, setIsCreating] = useState<string | null>(null);
+    const [filter, setFilter] = useState<'all' | TemplateCategory>('all');
     const [search, setSearch] = useState('');
 
     const filteredTemplates = templatesCatalog.filter(t => {
@@ -103,6 +75,30 @@ export function TemplatesPage() {
             t.description.toLowerCase().includes(search.toLowerCase());
         return matchesFilter && matchesSearch;
     });
+
+    const handleUseTemplate = async (template: PipelineTemplate) => {
+        setIsCreating(template.id);
+
+        const { error } = await createPipeline({
+            name: template.name,
+            description: template.description,
+            is_active: true,
+            config: {
+                templateId: template.id,
+                category: template.category,
+                stages: template.stageNames.map((stageName, index) => ({
+                    name: stageName,
+                    order: index,
+                })),
+            },
+        } as any);
+
+        setIsCreating(null);
+
+        if (!error) {
+            navigate('/pipelines');
+        }
+    };
 
     return (
         <div className="space-y-6">
@@ -117,6 +113,12 @@ export function TemplatesPage() {
                     <span className="text-sm font-medium">Import Template</span>
                 </button>
             </div>
+
+            {isCreating && (
+                <Card className="p-3 border-white/20 bg-white/5">
+                    <p className="text-xs text-white/70">Creating pipeline from template...</p>
+                </Card>
+            )}
 
             {/* Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -170,7 +172,7 @@ export function TemplatesPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div
                     className="p-4 rounded-lg border border-dashed border-white/10 bg-[hsl(var(--card))] cursor-pointer hover:bg-white/[0.02] transition-colors"
-                    onClick={() => navigate('/pipelines')}
+                    onClick={() => handleUseTemplate(templatesCatalog[3])}
                 >
                     <div className="flex items-center gap-3">
                         <div className="p-2 rounded-lg bg-white/5">
@@ -178,13 +180,13 @@ export function TemplatesPage() {
                         </div>
                         <div>
                             <h3 className="text-sm font-medium text-white/80">Quick Start</h3>
-                            <p className="text-xs text-white/40">Create a simple data pipeline</p>
+                            <p className="text-xs text-white/40">Create API sync pipeline</p>
                         </div>
                     </div>
                 </div>
                 <div
                     className="p-4 rounded-lg border border-dashed border-white/10 bg-[hsl(var(--card))] cursor-pointer hover:bg-white/[0.02] transition-colors"
-                    onClick={() => navigate('/pipelines')}
+                    onClick={() => handleUseTemplate(templatesCatalog[1])}
                 >
                     <div className="flex items-center gap-3">
                         <div className="p-2 rounded-lg bg-white/5">
@@ -198,7 +200,7 @@ export function TemplatesPage() {
                 </div>
                 <div
                     className="p-4 rounded-lg border border-dashed border-white/10 bg-[hsl(var(--card))] cursor-pointer hover:bg-white/[0.02] transition-colors"
-                    onClick={() => navigate('/pipelines')}
+                    onClick={() => handleUseTemplate(templatesCatalog[0])}
                 >
                     <div className="flex items-center gap-3">
                         <div className="p-2 rounded-lg bg-white/5">
@@ -243,7 +245,7 @@ export function TemplatesPage() {
             {/* Templates Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredTemplates.map(template => (
-                    <TemplateCard key={template.id} template={template} />
+                    <TemplateCard key={template.id} template={template} onUseTemplate={handleUseTemplate} />
                 ))}
             </div>
 
