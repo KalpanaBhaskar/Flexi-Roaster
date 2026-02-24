@@ -9,6 +9,7 @@ from datetime import datetime
 import uvicorn
 
 from backend.config import settings
+from backend.api.routes import pipelines, executions, metrics, airflow, observability
 from backend.api.routes import pipelines, executions, metrics, airflow, governance
 from backend.api.middleware.gateway_middleware import GatewayMiddleware
 from backend.api.security import get_current_auth_context
@@ -91,6 +92,7 @@ app.include_router(pipelines.router, prefix=settings.API_PREFIX)
 app.include_router(executions.router, prefix=settings.API_PREFIX)
 app.include_router(metrics.router, prefix=settings.API_PREFIX)
 app.include_router(airflow.router, prefix=settings.API_PREFIX)
+app.include_router(observability.router, prefix=settings.API_PREFIX)
 app.include_router(model_serving.router, prefix=settings.API_PREFIX)
 
 
