@@ -63,6 +63,11 @@ Server will be available at:
 - `GET /api/metrics` - Current metrics
 - `GET /api/metrics/history` - Historical data
 
+### Observability
+- `GET /api/observability/integrations` - Integration readiness for Prometheus/Grafana, ELK, Evidently/Arize/Fiddler, PagerDuty/Opsgenie
+- `GET /api/observability/prometheus` - Prometheus scrape endpoint
+- `POST /api/observability/events` - Dispatch metrics/log/ML-monitoring/alerting events
+
 ## Example Usage
 
 ### Create a Pipeline
