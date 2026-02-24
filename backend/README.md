@@ -67,6 +67,8 @@ Server will be available at:
 - `GET /api/observability/integrations` - Integration readiness for Prometheus/Grafana, ELK, Evidently/Arize/Fiddler, PagerDuty/Opsgenie
 - `GET /api/observability/prometheus` - Prometheus scrape endpoint
 - `POST /api/observability/events` - Dispatch metrics/log/ML-monitoring/alerting events
+### Model Serving & Deployment
+- `GET /api/model-serving` - Supported model-serving stack and current deployment config
 
 ## Example Usage
 

@@ -2,7 +2,7 @@
 FlexiRoaster FastAPI Application.
 Main entry point for the REST API server.
 """
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from datetime import datetime
@@ -10,6 +10,10 @@ import uvicorn
 
 from backend.config import settings
 from backend.api.routes import pipelines, executions, metrics, airflow, observability
+from backend.api.routes import pipelines, executions, metrics, airflow, governance
+from backend.api.middleware.gateway_middleware import GatewayMiddleware
+from backend.api.security import get_current_auth_context
+from backend.api.routes import pipelines, executions, metrics, airflow, model_serving
 
 # Create FastAPI app
 app = FastAPI(
@@ -29,6 +33,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# API gateway middleware
+app.add_middleware(GatewayMiddleware)
 
 # Request/Response logging middleware
 if settings.LOG_REQUESTS:
@@ -74,11 +81,19 @@ async def root():
 
 
 # Include routers
+auth_dependencies = [Depends(get_current_auth_context)] if settings.AUTH_ENABLED else []
+
+app.include_router(pipelines.router, prefix=settings.API_PREFIX, dependencies=auth_dependencies)
+app.include_router(executions.router, prefix=settings.API_PREFIX, dependencies=auth_dependencies)
+app.include_router(metrics.router, prefix=settings.API_PREFIX, dependencies=auth_dependencies)
+app.include_router(airflow.router, prefix=settings.API_PREFIX, dependencies=auth_dependencies)
+app.include_router(governance.router, prefix=settings.API_PREFIX, dependencies=auth_dependencies)
 app.include_router(pipelines.router, prefix=settings.API_PREFIX)
 app.include_router(executions.router, prefix=settings.API_PREFIX)
 app.include_router(metrics.router, prefix=settings.API_PREFIX)
 app.include_router(airflow.router, prefix=settings.API_PREFIX)
 app.include_router(observability.router, prefix=settings.API_PREFIX)
+app.include_router(model_serving.router, prefix=settings.API_PREFIX)
 
 
 # Run server

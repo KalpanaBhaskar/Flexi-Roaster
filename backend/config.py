@@ -19,6 +19,22 @@ class Settings(BaseSettings):
     CORS_ORIGINS: Union[str, List[str]] = "http://localhost:3000,http://localhost:5173,http://127.0.0.1:5173"
     AIRFLOW_CALLBACK_SECRET: Optional[str] = None
 
+    # API Gateway
+    API_GATEWAY_PROVIDER: str = "kong"
+    GATEWAY_KEY_HEADER: str = "x-gateway-key"
+    TRUSTED_GATEWAY_KEY: Optional[str] = None
+
+    # OAuth2 / OpenID Connect
+    AUTH_ENABLED: bool = True
+    OIDC_ISSUER_URL: Optional[str] = None
+    OIDC_AUDIENCE: Optional[str] = None
+
+    # Data governance
+    ATLAS_BASE_URL: Optional[str] = None
+    ATLAS_API_TOKEN: Optional[str] = None
+    AMUNDSEN_BASE_URL: Optional[str] = None
+    AMUNDSEN_API_TOKEN: Optional[str] = None
+
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
     def parse_cors_origins(cls, v):
@@ -27,6 +43,12 @@ class Settings(BaseSettings):
             return [origin.strip() for origin in v.split(",") if origin.strip()]
         return v
     
+
+    # Model Serving & Deployment
+    MODEL_SERVING: str = "FastAPI / Flask (custom APIs), TorchServe / TensorFlow Serving (framework-specific), BentoML (multi-framework)"
+    CONTAINERIZATION: str = "Docker"
+    ORCHESTRATION: str = "Kubernetes + KServe / Seldon Core"
+
     # Database
     DATABASE_URL: str = "sqlite:///./flexiroaster.db"
     

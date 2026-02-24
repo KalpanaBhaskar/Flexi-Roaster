@@ -198,6 +198,27 @@ class MetricsHistoryResponse(BaseModel):
     end_time: datetime
 
 
+class GovernanceDatasetRegistration(BaseModel):
+    """Schema for registering a dataset with governance tools."""
+    qualified_name: str
+    name: str
+    description: Optional[str] = None
+    owner: Optional[str] = "platform"
+    database: Optional[str] = "flexiroaster"
+    cluster: Optional[str] = "production"
+    schema: Optional[str] = "public"
+    tags: List[str] = Field(default_factory=list)
+
+
+class GovernanceRegistrationResponse(BaseModel):
+    """Response after governance metadata registration calls."""
+    message: str
+    dataset: GovernanceDatasetRegistration
+    atlas_status: str
+    amundsen_status: str
+    requested_by: str
+
+
 # Error Schemas
 class ErrorResponse(BaseModel):
     """Schema for error responses"""
@@ -211,3 +232,18 @@ class SuccessResponse(BaseModel):
     """Schema for success responses"""
     message: str
     data: Optional[Dict[str, Any]] = None
+
+
+class ServingOption(BaseModel):
+    """Model serving option metadata."""
+    name: str
+    category: str
+    description: str
+
+
+class DeploymentStackResponse(BaseModel):
+    """Deployment stack details for model-serving workloads."""
+    serving_options: List[ServingOption]
+    containerization: str
+    orchestration: List[str]
+    current: Dict[str, str]
