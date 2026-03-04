@@ -73,7 +73,7 @@ def initialize_execution(pipeline_id: str, context: Optional[Dict[str, Any]] = N
     return execution
 
 
-def initialize_execution(pipeline_id: str, context: Optional[Dict[str, Any]] = None) -> Execution:
+# def initialize_execution(pipeline_id: str, context: Optional[Dict[str, Any]] = None) -> Execution:
 def initialize_execution(pipeline_id: str, context: Dict = None) -> Execution:
     """Create and store a pending execution record."""
     from datetime import datetime
