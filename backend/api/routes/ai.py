@@ -14,7 +14,7 @@ from backend.ai.predictor import predictor, PipelineStats
 from backend.ai.forecasting import PipelineForecaster
 from pydantic import BaseModel
 
-router = APIRouter(prefix="/api/ai", tags=["ai"])
+router = APIRouter(prefix="/ai", tags=["ai"])
 
 # Initialize the forecaster
 forecaster = PipelineForecaster()

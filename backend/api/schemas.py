@@ -15,6 +15,17 @@ class StageTypeSchema(str, Enum):
     VALIDATION = "validation"
 
 
+class StageExecution(BaseModel):
+    """Execution status and data for a single stage."""
+    stage_id: str
+    status: str
+    started_at: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
+    duration: Optional[float] = None
+    output: Optional[Dict[str, Any]] = None
+    error: Optional[str] = None
+
+
 class ExecutionStatusSchema(str, Enum):
     """Execution status"""
     PENDING = "pending"
@@ -75,6 +86,14 @@ class PipelineCreate(PipelineBase):
     stages: List[StageCreate]
 
 
+class PipelineDefinition(PipelineBase):
+    """Full schema representation of a Pipeline used by CRUD operations."""
+    id: str
+    version: str = "1.0"
+    stages: List[StageCreate] = Field(default_factory=list)
+    variables: Dict[str, Any] = Field(default_factory=dict)
+
+
 class PipelineUpdate(BaseModel):
     """Schema for updating a pipeline"""
     name: Optional[str] = None
@@ -103,6 +122,19 @@ class PipelineListResponse(BaseModel):
 class ExecutionCreate(BaseModel):
     """Schema for creating an execution"""
     pipeline_id: str
+
+
+class PipelineExecution(BaseModel):
+    """Full schema representation of an Execution used by CRUD operations."""
+    id: str
+    pipeline_id: str
+    pipeline_name: str
+    status: str
+    started_at: datetime
+    completed_at: Optional[datetime] = None
+    duration: Optional[float] = None
+    context: Dict[str, Any] = Field(default_factory=dict)
+    error: Optional[str] = None
 
 
 class AirflowTriggerRequest(BaseModel):
